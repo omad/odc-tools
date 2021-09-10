@@ -1,14 +1,15 @@
-# ODC Statistician
+# Datacube Statistician
+
+[odc-tools](../../)
 
 Statistician is a framework of tools for generating statistical summaries of
 large collections of Earth Observation Imagery managed in an Open
 Datacube Instance. It is a spiritual successor to [datacube-stats](https://github.com/opendatacube/datacube-stats/),
-but intended to run in a cloud environment rather than on a HPC.
+but is intended to run in a cloud environment rather than on a HPC.
 
 It has already run at continental scale to produce annual geomedian summaries of all of Africa based on Sentinel-2 data.
 
-It is still under development, including adding support for processing sibling products, eg. Water Observations together with Surface Reflectance Quality classifications.
-
+It is still under active development.
 
 ## Installation
 

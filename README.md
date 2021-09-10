@@ -1,17 +1,40 @@
 [![Test Status](https://github.com/opendatacube/odc-tools/actions/workflows/main.yml/badge.svg)](https://github.com/opendatacube/odc-tools/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/opendatacube/odc-tools/branch/develop/graph/badge.svg?token=PovpVLRFwn)](https://codecov.io/gh/opendatacube/odc-tools)
 
-DEA Prototype Code
+ODC Prototype Code
 ==================
 
-- AWS s3 tools
-- Rasterio from S3 investigations
-- Utilities for data visualizations in notebooks
+This repository contains Open Datacube related libraries and command line tools
+that are still under development, or too small to yet be released as their own
+repository.
+
+
+Contents
+========
+
+<!-- toc --> 
+<!-- tocstop -->
+
+Applications and Tools
+======================
+
+- [Datacube Statistician](libs/stats/) Dask based tool and library for generating statistical summaries of large collections of Earth Observation Imagery
+- [Datacube Tools](apps/dc_tools/) Streamlined tools for working with Open Datacube indexes
+- [Cloud Tools](apps/cloud/) Command line tools not specific to Open Datacube
+
+Libraries
+=========
+
+- [Algorithms](libs/algo/) Algorithms and associated helper methods
+- [Cloud](libs/cloud/) Functions for working with AWS, Azure and THREDDS
+- [Dataset cache](libs/dscache/) High speed random access Dataset cache
+- [IO](libs/io/) Common IO Utilities, used internally in the provided apps.
+- [STAC](libs/stac/) Tools for converting between [STAC](https://stacspec.org/) and Open Datacube
 
 Installation
 ============
 
-This repository provides a number of small [libraries](https://github.com/opendatacube/odc-tools/tree/develop/libs)
+This repository provides a number of [libraries](https://github.com/opendatacube/odc-tools/tree/develop/libs)
 and [CLI tools](https://github.com/opendatacube/odc-tools/tree/develop/apps).
 
 Full list of libraries, and install instructions:
@@ -49,106 +72,13 @@ first: `pip3 install --upgrade pip`.
 For Conda Users
 ---------------
 
-Currently there are no `odc-tools` conda packages. But majority of `odc-tools`
-dependencies can be installed with conda from `conda-forge` channel.
+Currently there are no `odc-tools` conda packages. But the majority of `odc-tools`
+dependencies can be installed with conda from the `conda-forge` channel.
 
-Use `conda env update -f <file>` to install all needed dependencies for
+Use `conda env update -f environment.yaml` to install all needed dependencies for
 `odc-tools` libraries and apps.
 
-<details><summary>Conda `environment.yaml` (click to expand)</summary><div markdown="1">
-
-```yaml
-channels:
-  - conda-forge
-dependencies:
-  # Datacube
-  - datacube>=1.8.5
-
-  # odc.dscache
-  - python-lmdb
-  - zstandard
-
-  # odc.algo
-  - dask-image
-  - numexpr
-  - scikit-image
-  - scipy
-  - toolz
-
-  # odc.ui
-  - ipywidgets
-  - ipyleaflet
-  - tqdm
-
-  # odc-apps-dc-tools
-  - pystac>=1
-  - pystac-client>=0.2.0
-  - azure-storage-blob
-  - fsspec
-  - lxml  # needed for thredds-crawler
-
-  # odc.{aio,aws}: aiobotocore/boto3
-  #  pin aiobotocore for easier resolution of dependencies
-  - aiobotocore==1.3.3
-  - boto3
-
-  # eodatasets3 (used by odc-stats)
-  - boltons
-  - ciso8601
-  - python-rapidjson
-  - requests-cache
-  - ruamel.yaml
-  - structlog
-  - url-normalize
-
-  # for dev
-  - pylint
-  - autopep8
-  - flake8
-  - isort
-  - black
-  - mypy
-
-  # For tests
-  - pytest
-  - pytest-httpserver
-  - pytest-cov
-  - pytest-timeout
-  - moto
-  - mock
-  - deepdiff
-
-  # for pytest-depends
-  - future_fstrings
-  - networkx
-  - colorama
-
-  - pip=20
-  - pip:
-      # odc.apps.dc-tools
-      - thredds-crawler
-
-      # odc.stats
-      - eodatasets3
-
-      # tests
-      - pytest-depends
-
-      # odc.ui
-      - jupyter-ui-poll
-
-      # odc-tools libs
-      - odc-stac
-      - odc-algo
-      - odc-ui
-      - odc-dscache
-      - odc-stats
-
-      # odc-tools CLI apps
-      - odc-apps-cloud
-      - odc-apps-dc-tools
-```
-</div></details>
+See [environment.yaml](environment.yaml).
 
 CLI Tools
 =========
@@ -156,7 +86,7 @@ CLI Tools
 Installation
 ------------
 
-Cloud tools depend on `aiobotocore` package which has a dependency on a specific
+The AWS cloud tools depend on the `aiobotocore` package which has a dependency on a specific
 version of `botocore`. Another package we use, `boto3`, also depends on a
 specific version of `botocore`. As a result having both `aiobotocore` and
 `boto3` in one environment can be a bit tricky. The easiest way to solve this,
@@ -186,49 +116,6 @@ practice to limit `pip`/`conda` package resolution search.
    pip install odc-apps-dc-tools
    ```
 
-Apps
-----
-
-1. `s3-find` list S3 bucket with wildcard
-2. `s3-to-tar` fetch documents from S3 and dump them to a tar archive
-3. `gs-to-tar` search GS for documents and dump them to a tar archive
-4. `dc-index-from-tar` read yaml documents from a tar archive and add them to datacube
-
-
-Example:
-
-```bash
-#!/bin/bash
-
-s3_src='s3://dea-public-data/L2/sentinel-2-nrt/**/*.yaml'
-
-s3-find "${s3_src}" | \
-  s3-to-tar | \
-    dc-index-from-tar --env s2 --ignore-lineage
-```
-
-Fastest way to list regularly placed files is to use fixed depth listing:
-
-```bash
-#!/bin/bash
-
-# only works when your metadata is same depth and has fixed file name
-s3_src='s3://dea-public-data/L2/sentinel-2-nrt/S2MSIARD/*/*/ARD-METADATA.yaml'
-
-s3-find --skip-check "${s3_src}" | \
-  s3-to-tar | \
-    dc-index-from-tar --env s2 --ignore-lineage
-```
-
-When using Google Storage:
-
-```bash
-#!/bin/bash
-
-# Google Storage support
-gs-to-tar --bucket data.deadev.com --prefix mangrove_cover
-dc-index-from-tar --protocol gs --env mangroves --ignore-lineage metadata.tar.gz
-```
 
 
 Local Development

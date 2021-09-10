@@ -1,7 +1,15 @@
-import json
-from pathlib import Path
+"""
+fs-to-dc allows adding datasets stored on the filesystem to an ODC Index
 
+It improves upon `datacube dataset add` and `datacube dataset update` in several ways
+- Automatically choose whether to Add or Update a dataset
+- Allow indexing STAC format
+"""
 import click
+import logging
+import yaml
+from odc.stac.transform import stac_transform
+
 import datacube
 from datacube.index.hl import Doc2Dataset
 from odc.apps.dc_tools.utils import (
@@ -34,21 +42,21 @@ def _find_files(
     if glob is None:
         glob = "**/*.json" if stac else "**/*.yaml"
 
-    return Path(path).glob(glob)
+def setup_logging()
+    logging.basicConfig(
+        level=logging.WARNING,
+        format="%(asctime)s: %(levelname)s: %(message)s",
+        datefmt="%m/%d/%Y %I:%M:%S",
+    )
 
 
-@click.command("fs-to-dc")
-@click.argument("input_directory", type=str, nargs=1)
+@click.command("fs-to-dc",
+               help=__doc__)
+@click.argument("DATASET_FILES", type=str, nargs=-1)
 @update_if_exists
 @allow_unsafe
 @transform_stac
-@click.option(
-    "--glob",
-    default=None,
-    help="File system glob to use, defaults to **/*.yaml or **/*.json for STAC.",
-)
-def cli(input_directory, update_if_exists, allow_unsafe, stac, glob):
-
+def cli(dataset_files, update_if_exists, allow_unsafe, stac):
     dc = datacube.Datacube()
     doc2ds = Doc2Dataset(dc.index)
 
@@ -59,7 +67,7 @@ def cli(input_directory, update_if_exists, allow_unsafe, stac, glob):
 
     added, failed = 0, 0
 
-    for in_file in files_to_process:
+    for in_file in dataset_files:
         with in_file.open() as f:
             try:
                 if in_file.endswith(".yml") or in_file.endswith(".yaml"):
@@ -86,4 +94,5 @@ def cli(input_directory, update_if_exists, allow_unsafe, stac, glob):
 
 
 if __name__ == "__main__":
+    setup_logging()
     cli()

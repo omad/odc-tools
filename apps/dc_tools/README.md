@@ -1,6 +1,13 @@
 # odc.apps.dc_tools
 
+[up to odc-tools](../../)
+
 Command line utilities for working with datacube index
+
+## Contents 
+
+<!-- toc --> 
+<!-- tocstop -->
 
 ## Installation
 
@@ -27,22 +34,6 @@ Extended usage:
 TODO:
 ```
 
-### dc-index-from-tar
-
-Index ODC metadata that is contained in a .tar file
-
-Simple usage:
-
-``` bash
-dc-index-from-tar 'path/to/file.tar'
-
-```
-
-Extended usage:
-
-``` bash
-TODO:
-```
 
 ### sqs-to-dc
 
@@ -196,4 +187,27 @@ Index all the data, add the product, set a limit and update scenes that already 
 
 ``` bash
 esri-lc-to-dc --add-product --limit 1000 --update
+```
+
+### dc-index-from-tar
+
+Index ODC metadata that is contained in a .tar file
+
+Simple usage:
+
+``` bash
+dc-index-from-tar 'path/to/file.tar'
+
+```
+
+Extended usage:
+
+``` bash
+#!/bin/bash
+
+s3_src='s3://dea-public-data/L2/sentinel-2-nrt/**/*.yaml'
+
+s3-find "${s3_src}" | \
+  s3-to-tar | \
+    dc-index-from-tar --env s2 --ignore-lineage
 ```
