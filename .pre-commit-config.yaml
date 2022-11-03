@@ -1,3 +1,4 @@
+---
 repos:
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.28.0
@@ -16,6 +17,11 @@ repos:
       - id: requirements-txt-fixer
       - id: check-added-large-files
       - id: check-merge-conflict
+# Run black before the linters, since it could alter line numbering
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
   - repo: https://github.com/pre-commit/mirrors-pylint
     rev: 'v3.0.0a5'  # Use the sha / tag you want to point at
     hooks:
@@ -24,7 +30,3 @@ repos:
     rev: '5.0.4'
     hooks:
       - id: flake8
-  - repo: https://github.com/psf/black
-    rev: 22.10.0
-    hooks:
-      - id: black

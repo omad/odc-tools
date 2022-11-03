@@ -6,7 +6,7 @@ import datacube
 from datacube.index.hl import Doc2Dataset
 from odc.apps.dc_tools.utils import (
     index_update_dataset,
-    update_if_exists,
+    update_if_exists_flag,
     archive_less_mature,
     allow_unsafe,
     transform_stac,
@@ -38,7 +38,7 @@ def _find_files(
 
 @click.command("fs-to-dc")
 @click.argument("input_directory", type=str, nargs=1)
-@update_if_exists
+@update_if_exists_flag
 @allow_unsafe
 @archive_less_mature
 @transform_stac
@@ -71,7 +71,7 @@ def cli(
     for in_file in files_to_process:
         with in_file.open() as f:
             try:
-                if in_file.suffix == ".yml" or in_file.suffix == ".yaml":
+                if in_file.suffix in (".yml", ".yaml"):
                     metadata = yaml.safe_load(f)
                 else:
                     metadata = json.load(f)
@@ -88,11 +88,11 @@ def cli(
                     archive_less_mature=archive_less_mature,
                 )
                 added += 1
-            except Exception as e:
-                logging.exception(f"Failed to add dataset {in_file} with error {e}")
+            except Exception:  # pylint: disable=broad-except
+                logging.exception("Failed to add dataset %s", in_file)
                 failed += 1
 
-    logging.info(f"Added {added} and failed {failed} datasets.")
+    logging.info("Added %s and failed %s datasets.", added, failed)
     if statsd_setting:
         statsd_gauge_reporting(added, ["app:fs_to_dc", "action:added"], statsd_setting)
         statsd_gauge_reporting(

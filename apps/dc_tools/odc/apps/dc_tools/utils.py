@@ -25,15 +25,11 @@ class IndexingException(Exception):
     Exception to raise for error during SQS to DC indexing/archiving
     """
 
-    pass
-
 
 class SkippedException(Exception):
     """
     Exception to raise for error if dataset exists  and not updating
     """
-
-    pass
 
 
 # A whole bunch of generic Click options
@@ -75,14 +71,14 @@ transform_stac_absolute = click.option(
     help="Use absolute paths from the STAC document.",
 )
 
-update = click.option(
+update_flag = click.option(
     "--update",
     is_flag=True,
     default=False,
     help="If set, update instead of add datasets.",
 )
 
-update_if_exists = click.option(
+update_if_exists_flag = click.option(
     "--update-if-exists",
     is_flag=True,
     default=False,
@@ -162,8 +158,8 @@ def get_esri_list():
     stream = pkg_resources.resource_stream(__name__, "esri-lc-tiles-list.txt")
     with stream as f:
         for tile in f.readlines():
-            id = tile.decode().rstrip("\n")
-            yield ESRI_LANDCOVER_BASE_URI.format(id=id)
+            tile_id = tile.decode().rstrip("\n")
+            yield ESRI_LANDCOVER_BASE_URI.format(id=tile_id)
 
 
 def index_update_dataset(
@@ -257,7 +253,7 @@ def index_update_dataset(
                     updates = {tuple(): changes.allow_any}
                 # Do the updating
                 try:
-                    dc.index.datasets.update(ds, updates_allowed=updates)
+                    dc.index.datasets.update_flag(ds, updates_allowed=updates)
                     updated = True
                 except ValueError as e:
                     raise IndexingException(
@@ -287,7 +283,9 @@ def index_update_dataset(
         logging.info("Existing Dataset Updated: %s", ds.id)
 
 
-def statsd_gauge_reporting(value, tags=[], statsd_setting="localhost:8125"):
+def statsd_gauge_reporting(value, tags=None, statsd_setting="localhost:8125"):
+    if tags is None:
+        tags = []
     host = statsd_setting.split(":")[0]
     port = statsd_setting.split(":")[1]
     options = {"statsd_host": host, "statsd_port": port}

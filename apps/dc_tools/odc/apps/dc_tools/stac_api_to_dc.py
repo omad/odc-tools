@@ -22,7 +22,7 @@ from odc.apps.dc_tools.utils import (
     limit,
     statsd_gauge_reporting,
     statsd_setting,
-    update_if_exists,
+    update_if_exists_flag,
 )
 from pystac.item import Item
 from pystac_client import Client
@@ -44,14 +44,18 @@ def _parse_options(options: Optional[str]) -> Dict[str, Any]:
 
                 try:
                     value = json.loads(value)
-                except Exception:
+                except Exception:  # pylint:disable=broad-except
                     logging.warning(
-                        f"Failed to handle value {value} for key {key} as JSON, using str"
+                        "Failed to handle value %s for key %s as JSON, using str",
+                        value,
+                        key,
                     )
                 parsed_options[key] = value
-            except Exception as e:
+            except Exception:  # pylint:disable=broad-except
                 logging.warning(
-                    f"Couldn't parse option {option}, format is key=value, exception was {e}"
+                    "Couldn't parse option %s format is key=value",
+                    option,
+                    exc_info=True,
                 )
 
     return parsed_options
@@ -149,10 +153,10 @@ def stac_api_to_odc(
     search = client.search(**config)
     n_items = search.matched()
     if n_items is not None:
-        logging.info("Found {} items to index".format(n_items))
+        logging.info("Found %s items to index", n_items)
         if n_items == 0:
             logging.warning("Didn't find any items, finishing.")
-            return 0, 0
+            return 0, 0, 0
     else:
         logging.warning("API did not return the number of items.")
 
@@ -186,8 +190,8 @@ def stac_api_to_odc(
                     sys.stdout.write(f"\rAdded {success} datasets...")
             except SkippedException:
                 skipped += 1
-            except Exception as e:
-                logging.exception(f"Failed to handle item {item} with exception {e}")
+            except Exception:  # pylint:disable=broad-except
+                logging.exception("Failed to handle item %s", item)
                 failure += 1
     sys.stdout.write("\r")
 
@@ -196,7 +200,7 @@ def stac_api_to_odc(
 
 @click.command("stac-to-dc")
 @limit
-@update_if_exists
+@update_if_exists_flag
 @allow_unsafe
 @click.option(
     "--catalog-href",
