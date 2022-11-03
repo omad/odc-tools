@@ -3,7 +3,8 @@ from pathlib import Path
 import pytest
 from datacube import Datacube
 from click.testing import CliRunner
-from odc.apps.dc_tools.add_update_products import _get_product, _parse_csv, cli
+from odc.apps.dc_tools.add_update_products import _get_product, _parse_csv
+from odc.apps.dc_tools.add_update_products import cli as add_update_products_cli
 
 
 TEST_DATA_FOLDER: Path = Path(__file__).parent.joinpath("data")
@@ -53,12 +54,10 @@ def test_add_products(local_csv):
     runner = CliRunner()
     # This will fail if requester pays is enabled
     result = runner.invoke(
-        cli,
+        add_update_products_cli,
         [
             local_csv,
             "--update-if-exists",
-            "--statsd-setting",
-            "localhost:8125",
         ],
     )
     assert result.exit_code == 0
