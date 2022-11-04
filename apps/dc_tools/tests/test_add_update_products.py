@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-from datacube import Datacube
 from click.testing import CliRunner
 from odc.apps.dc_tools.add_update_products import _get_product, _parse_csv
 from odc.apps.dc_tools.add_update_products import cli as add_update_products_cli
@@ -13,14 +12,6 @@ PRODUCT_EXAMPLE: str = (
     "https://raw.githubusercontent.com/digitalearthafrica/"
     "config/master/products/esa_s2_l2a.odc-product.yaml"
 )
-
-
-def have_db():
-    try:
-        Datacube()
-    except Exception:
-        return False
-    return True
 
 
 def test_parse_local_csv(local_csv):
@@ -42,15 +33,7 @@ def test_load_product_def(remote_product):
     assert products[0]["name"] == "s2_l2a"
 
 
-@pytest.mark.skipif(have_db() is False, reason="No database")
-@pytest.mark.depends(name="have_db")
-def test_havedb():
-    assert have_db()
-
-
-@pytest.mark.depends(on="have_db")
-@pytest.mark.depends(name="add_products")
-def test_add_products(local_csv):
+def test_add_products(local_csv, odc_db):
     runner = CliRunner()
     # This will fail if requester pays is enabled
     result = runner.invoke(

@@ -1,7 +1,6 @@
 import pytest
 from click.testing import CliRunner
 from odc.apps.dc_tools.fs_to_dc import cli, _find_files
-from datacube import Datacube
 
 from pathlib import Path
 
@@ -43,8 +42,7 @@ def test_find_glob(test_data_dir):
     assert len(files) >= 6
 
 
-@pytest.mark.depends(on=["add_products"])
-def test_fs_to_fc_yaml(test_data_dir):
+def test_fs_to_fc_yaml(test_data_dir, odc_test_db_with_products):
     runner = CliRunner()
     result = runner.invoke(
         cli,
