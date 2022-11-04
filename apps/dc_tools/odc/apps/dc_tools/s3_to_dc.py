@@ -34,6 +34,12 @@ from odc.apps.dc_tools.utils import (
 from odc.apps.dc_tools._docs import parse_doc_stream
 from odc.apps.dc_tools._stac import stac_transform, stac_transform_absolute
 
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(asctime)s: %(levelname)s: %(message)s",
+    datefmt="%m/%d/%Y %I:%M:%S",
+)
+
 
 # Grab the URL from the resulting S3 item
 def stream_urls(urls):
